@@ -1,10 +1,10 @@
 package com.example.kidzbraindb.controller;
 
 import com.example.kidzbraindb.dto.ProgresoDto;
-import com.example.kidzbraindb.model.Juego;
+import com.example.kidzbraindb.model.Leccion; // Cambio: Importamos Leccion
 import com.example.kidzbraindb.model.Progreso;
 import com.example.kidzbraindb.model.Usuario;
-import com.example.kidzbraindb.service.JuegoService;
+import com.example.kidzbraindb.service.LeccionService; // Cambio: Service de Leccion
 import com.example.kidzbraindb.service.ProgresoService;
 import com.example.kidzbraindb.service.UsuarioService;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,7 @@ public class ProgresoController {
 
     private final ProgresoService progresoService;
     private final UsuarioService usuarioService;
-    private final JuegoService juegoService;
+    private final LeccionService leccionService; // Cambio: Inyectamos LeccionService
 
     @GetMapping
     public ResponseEntity<List<ProgresoDto>> getAll() {
@@ -50,12 +50,6 @@ public class ProgresoController {
         return ResponseEntity.ok(dtos);
     }
 
-    @GetMapping("/puntuacion/usuario/{idUsuario}/materia/{idMateria}")
-    public ResponseEntity<Integer> sumByMateria(@PathVariable Integer idUsuario, @PathVariable Integer idMateria) {
-        Integer suma = progresoService.sumByMateria(idUsuario, idMateria);
-        return ResponseEntity.ok(suma);
-    }
-
     @PostMapping
     public ResponseEntity<ProgresoDto> save(@RequestBody ProgresoDto dto) {
         Progreso progresoParaGuardar = convertirAEntidad(dto);
@@ -63,29 +57,33 @@ public class ProgresoController {
         return ResponseEntity.ok(convertirAEntidadDTO(progresoGuardado));
     }
 
+    // --- MÉTODOS DE CONVERSIÓN ACTUALIZADOS ---
+
     private ProgresoDto convertirAEntidadDTO(Progreso progreso) {
         return ProgresoDto.builder()
                 .progresoId(progreso.getId())
                 .usuarioId(progreso.getUsuario().getId())
-                .juegoId(progreso.getJuego().getId())
+                .leccionId(progreso.getLeccion().getId()) // Cambio: leccionId
                 .completado(progreso.getCompletado())
                 .puntuacion(progreso.getPuntuacion())
-                .intentos(progreso.getIntentos())
+                // .intentos(progreso.getIntentos()) // Eliminado (opcional según tu nueva tabla)
                 .fecha(progreso.getFecha())
                 .build();
     }
 
     private Progreso convertirAEntidad(ProgresoDto dto) {
         Usuario usuario = usuarioService.getById(dto.getUsuarioId());
-        Juego juego = juegoService.getById(dto.getJuegoId());
+
+        // Cambio: Buscamos la Lección, no el Juego
+        Leccion leccion = leccionService.getById(dto.getLeccionId());
 
         return Progreso.builder()
                 .id(dto.getProgresoId())
                 .usuario(usuario)
-                .juego(juego)
+                .leccion(leccion) // Cambio: Seteamos la lección
                 .completado(dto.getCompletado())
                 .puntuacion(dto.getPuntuacion())
-                .intentos(dto.getIntentos())
+                // .intentos(dto.getIntentos()) // Eliminado
                 .fecha(dto.getFecha())
                 .build();
     }

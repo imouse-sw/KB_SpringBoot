@@ -3,6 +3,7 @@ package com.example.kidzbraindb.service.impl;
 import com.example.kidzbraindb.model.Grado;
 import com.example.kidzbraindb.repository.GradoRepository;
 import com.example.kidzbraindb.service.GradoService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @Service
+@Transactional
 public class GradoServiceImpl implements GradoService {
     private final GradoRepository gradoRepository;
 
@@ -42,6 +44,6 @@ public class GradoServiceImpl implements GradoService {
         }
 
         aux.setNombre(grado.getNombre());
-        return gradoRepository.save(grado);
+        return gradoRepository.save(aux);
     }
 }

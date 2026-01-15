@@ -4,6 +4,7 @@ import com.example.kidzbraindb.model.Juego;
 import com.example.kidzbraindb.model.Leccion;
 import com.example.kidzbraindb.repository.JuegoRepository;
 import com.example.kidzbraindb.service.JuegoService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @Service
+@Transactional
 public class JuegoServiceImpl implements JuegoService {
     private final JuegoRepository juegoRepository;
 
@@ -51,6 +53,6 @@ public class JuegoServiceImpl implements JuegoService {
         aux.setTipo(juego.getTipo());
         aux.setDescripcion(juego.getDescripcion());
 
-        return juegoRepository.save(juego);
+        return juegoRepository.save(aux);
     }
 }

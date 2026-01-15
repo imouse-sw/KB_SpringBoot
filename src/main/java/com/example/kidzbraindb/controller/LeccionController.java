@@ -32,6 +32,16 @@ public class LeccionController {
         return ResponseEntity.ok(dtos);
     }
 
+    @GetMapping("/desbloqueada/usuario/{idUsuario}/materia/{idMateria}/grado/{idGrado}")
+    public ResponseEntity<Integer> getSiguienteLeccion(
+            @PathVariable Integer idUsuario,
+            @PathVariable Integer idMateria,
+            @PathVariable Integer idGrado) { // <--- Recibimos el grado
+
+        Integer orden = leccionService.getSiguienteOrdenDesbloqueado(idUsuario, idMateria, idGrado);
+        return ResponseEntity.ok(orden);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<LeccionDto> getById(@PathVariable Integer id) {
         Leccion leccion = leccionService.getById(id);

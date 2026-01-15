@@ -11,4 +11,5 @@ public interface LeccionService {
     Leccion save(Leccion leccion);
     void delete(Integer id);
     Leccion update(Integer id, Leccion leccion);
+    Integer getSiguienteOrdenDesbloqueado(Integer idUsuario, Integer idMateria, Integer idGrado);
 }

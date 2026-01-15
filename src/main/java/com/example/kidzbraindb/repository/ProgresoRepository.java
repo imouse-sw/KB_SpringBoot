@@ -14,11 +14,21 @@ import java.util.Optional;
 public interface ProgresoRepository extends JpaRepository<Progreso, Integer> {
    List<Progreso> findByUsuario_Id(Integer id);
 
-   @Query("SELECT SUM(p.puntuacion) " +
-           "FROM Progreso p " +
-           "JOIN p.juego j " +
-           "JOIN j.leccion l " +
-           "JOIN l.materia m " +
-           "WHERE p.usuario.id = :idUsuario AND m.id = :idMateria")
+    @Query("SELECT SUM(p.puntuacion) " +
+            "FROM Progreso p " +
+            "JOIN p.leccion l " +
+            "JOIN l.materia m " +
+            "WHERE p.usuario.id = :idUsuario AND m.id = :idMateria")
     Integer sumPuntuacionByUsuarioAndMateria(@Param("idUsuario") Integer idUsuario, @Param("idMateria") Integer idMateria);
+
+    @Query("SELECT MAX(l.orden) " +
+            "FROM Progreso p " +
+            "JOIN p.leccion l " +
+            "WHERE p.usuario.id = :idUsuario " +
+            "AND l.materia.id = :idMateria " +
+            "AND l.grado.id = :idGrado " +  // <--- NUEVA LÍNEA IMPORTANTE
+            "AND p.completado = 1")
+    Integer findMaxOrdenCompletado(@Param("idUsuario") Integer idUsuario,
+                                   @Param("idMateria") Integer idMateria,
+                                   @Param("idGrado") Integer idGrado); // <--- NUEVO PARÁMETRO
 }

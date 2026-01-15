@@ -3,6 +3,7 @@ package com.example.kidzbraindb.service.impl;
 import com.example.kidzbraindb.model.Progreso;
 import com.example.kidzbraindb.repository.ProgresoRepository;
 import com.example.kidzbraindb.service.ProgresoService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @Service
+@Transactional
 public class ProgresoServiceImpl implements ProgresoService {
     private final ProgresoRepository progresoRepository;
 
@@ -29,16 +31,11 @@ public class ProgresoServiceImpl implements ProgresoService {
         return progresoRepository.findByUsuario_Id(idUsuario);
     }
 
-    @Override
-    public Integer sumByMateria(Integer idUsuario, Integer idMateria) {
-        Integer suma = progresoRepository.sumPuntuacionByUsuarioAndMateria(idUsuario, idMateria);
-        return (suma == null) ? 0 : suma;
-    }
 
     @Override
     public Progreso save(Progreso progreso) {
+        // Asignamos fecha actual del servidor siempre
         progreso.setFecha(Instant.now());
-
         return progresoRepository.save(progreso);
     }
 }

@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.Instant;
 
 @Data
@@ -13,7 +12,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "TBL_Progreso")
+@Table(name = "tbl_progreso")
 public class Progreso {
     @Id
     @Column(name = "id_progreso")
@@ -24,18 +23,16 @@ public class Progreso {
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;
 
+    // --- CAMBIO CLAVE: Ahora nos conectamos directo a la Lección ---
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_juego")
-    private Juego juego;
+    @JoinColumn(name = "id_leccion")
+    private Leccion leccion;
 
-    @Column(name = "completado", nullable = false)
+    @Column(name = "completado")
     private Integer completado;
 
     @Column(name = "puntuacion_obtenida")
     private Integer puntuacion;
-
-    @Column(name = "intentos_realizados", nullable = false)
-    private Integer intentos;
 
     @Column(name = "fecha")
     private Instant fecha;

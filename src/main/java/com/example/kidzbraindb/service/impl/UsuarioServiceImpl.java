@@ -3,6 +3,7 @@ package com.example.kidzbraindb.service.impl;
 import com.example.kidzbraindb.model.Usuario;
 import com.example.kidzbraindb.repository.UsuarioRepository;
 import com.example.kidzbraindb.service.UsuarioService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Optional;
 
 @AllArgsConstructor
 @Service
+@Transactional
 public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioRepository usuarioRepository;
 
@@ -60,7 +62,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
 
         aux.setNombre(usuario.getNombre());
-        aux.setNombre(usuario.getCorreo());
+        aux.setCorreo(usuario.getCorreo());
         aux.setEdad(usuario.getEdad());
 
         return usuarioRepository.save(aux);

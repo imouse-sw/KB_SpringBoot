@@ -10,9 +10,16 @@ import java.time.Instant;
 public class ProgresoDto {
     private Integer progresoId;
     private Integer usuarioId;
-    private Integer juegoId;
+
+    // --- CAMBIO PRINCIPAL ---
+    // Antes apuntábamos al juego, ahora apuntamos directo a la lección
+    private Integer leccionId;
+
     private Integer completado;
     private Integer puntuacion;
-    private Integer intentos;
+
+    // Eliminamos 'intentos' para coincidir con tu nueva tabla simplificada
+    // private Integer intentos;
+
     private Instant fecha;
 }

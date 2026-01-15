@@ -3,6 +3,7 @@ package com.example.kidzbraindb.service.impl;
 import com.example.kidzbraindb.model.Materia;
 import com.example.kidzbraindb.repository.MateriaRepository;
 import com.example.kidzbraindb.service.MateriaService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @Service
+@Transactional
 public class MateriaServiceImpl implements MateriaService {
     private final MateriaRepository materiaRepository;
 
@@ -42,6 +44,6 @@ public class MateriaServiceImpl implements MateriaService {
         }
 
         aux.setNombre(materia.getNombre());
-        return materiaRepository.save(materia);
+        return materiaRepository.save(aux);
     }
 }
