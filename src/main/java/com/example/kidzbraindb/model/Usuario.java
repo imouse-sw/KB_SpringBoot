@@ -33,6 +33,9 @@ public class Usuario {
     @Column(name = "edad_hijo", nullable = false)
     private Integer edad;
 
+    @Column(name = "foto_url")
+    private String fotoUrl;
+
     @CreationTimestamp
     @Column(name = "fecha_registro", updatable = false)
     private Instant fecha_registro;

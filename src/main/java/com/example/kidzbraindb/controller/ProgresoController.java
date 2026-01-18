@@ -50,6 +50,15 @@ public class ProgresoController {
         return ResponseEntity.ok(dtos);
     }
 
+    @GetMapping("/puntuacion/usuario/{idUsuario}/materia/{idMateria}")
+    public ResponseEntity<Integer> getPuntuacionPorMateria(
+            @PathVariable Integer idUsuario,
+            @PathVariable Integer idMateria
+    ) {
+        Integer puntos = progresoService.getPuntuacionPorMateria(idUsuario, idMateria);
+        return ResponseEntity.ok(puntos);
+    }
+
     @PostMapping
     public ResponseEntity<ProgresoDto> save(@RequestBody ProgresoDto dto) {
         Progreso progresoParaGuardar = convertirAEntidad(dto);

@@ -8,4 +8,6 @@ public interface ProgresoService {
     Progreso getById(Integer id);
     List<Progreso> getByUsuario(Integer idUsuario);
     Progreso save(Progreso progreso);
+    Integer getPuntuacionPorMateria(Integer idUsuario, Integer idMateria);
+
 }

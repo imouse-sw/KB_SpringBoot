@@ -32,8 +32,17 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Usuario save(Usuario usuario) {
-        if(usuarioRepository.findByCorreo(usuario.getCorreo()).isPresent()) {
-            throw new RuntimeException("El correo ya está registrado.");
+        Optional<Usuario> existente = usuarioRepository.findByCorreo(usuario.getCorreo());
+
+        // Si encontramos a alguien con ese correo...
+        if(existente.isPresent()) {
+            // Verificamos: ¿Es un usuario diferente?
+            // Si el usuario que llega es nuevo (id null) O tiene un ID distinto al de la BD...
+            // ENTONCES sí es un error (robo de correo).
+            if (usuario.getId() == null || !usuario.getId().equals(existente.get().getId())) {
+                throw new RuntimeException("El correo ya está registrado.");
+            }
+            // Si el ID es el mismo, no entra al if y permite guardar (es una actualización).
         }
 
         return usuarioRepository.save(usuario);

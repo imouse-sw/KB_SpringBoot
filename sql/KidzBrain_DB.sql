@@ -84,3 +84,6 @@ CREATE TABLE IF NOT EXISTS TBL_Progreso (
   FOREIGN KEY (id_usuario) REFERENCES TBL_Usuarios (id_usuario),
   FOREIGN KEY (id_juego) REFERENCES TBL_Juegos (id_juego)
 );
+
+ALTER TABLE TBL_Usuarios
+ADD foto_url VARCHAR(255) NULL;

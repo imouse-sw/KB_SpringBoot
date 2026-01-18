@@ -38,4 +38,12 @@ public class ProgresoServiceImpl implements ProgresoService {
         progreso.setFecha(Instant.now());
         return progresoRepository.save(progreso);
     }
+
+    @Override
+    public Integer getPuntuacionPorMateria(Integer idUsuario, Integer idMateria) {
+        Integer puntos = progresoRepository
+                .sumPuntuacionByUsuarioAndMateria(idUsuario, idMateria);
+
+        return puntos != null ? puntos : 0;
+    }
 }

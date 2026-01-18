@@ -6,7 +6,14 @@ import com.example.kidzbraindb.service.UsuarioService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,20 +26,10 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
     private List<UsuarioDto> usuarioDtos;
 
+    // Puedes borrar este método loadList() si ya no usas la lista en memoria
     public void loadList() {
         usuarioDtos = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            usuarioDtos.add(
-                    UsuarioDto.builder()
-                            .usuarioId(i++)
-                            .nombre("Usuario "+i)
-                            .correo("correo"+i+"@gmail.com")
-                            .password("password"+i)
-                            .edadHijo(i)
-                            .fechaRegistro(Instant.now())
-                            .build()
-            );
-        }
+        // ...
     }
 
     @GetMapping
@@ -53,6 +50,7 @@ public class UsuarioController {
                                             .password(u.getPassword())
                                             .edadHijo(u.getEdad())
                                             .fechaRegistro(u.getFecha_registro())
+                                            .fotoUrl(u.getFotoUrl()) // <-- AGREGADO
                                             .build())
                             .collect(Collectors.toList())
             );
@@ -67,13 +65,14 @@ public class UsuarioController {
                                         .password(u.getPassword())
                                         .edadHijo(u.getEdad())
                                         .fechaRegistro(u.getFecha_registro())
+                                        .fotoUrl(u.getFotoUrl())
                                         .build())
                         .collect(Collectors.toList())
         );
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<UsuarioDto>getById(@PathVariable Integer id) {
+    public ResponseEntity<UsuarioDto> getById(@PathVariable Integer id) {
         Usuario u = usuarioService.getById( id );
 
         if(u == null )
@@ -88,6 +87,7 @@ public class UsuarioController {
                         .password(u.getPassword())
                         .edadHijo(u.getEdad())
                         .fechaRegistro(u.getFecha_registro())
+                        .fotoUrl(u.getFotoUrl()) // <--- ¡ESTO FALTABA!
                         .build()
         );
     }
@@ -108,6 +108,7 @@ public class UsuarioController {
                         .password(u.getPassword())
                         .edadHijo(u.getEdad())
                         .fechaRegistro(u.getFecha_registro())
+                        .fotoUrl(u.getFotoUrl()) // <--- ¡CRUCIAL PARA EL LOGIN!
                         .build()
         );
     }
@@ -165,7 +166,77 @@ public class UsuarioController {
                         .password(u.getPassword())
                         .edadHijo(u.getEdad())
                         .fechaRegistro(u.getFecha_registro())
+                        .fotoUrl(u.getFotoUrl()) // También útil devolverlo al actualizar
                         .build()
         );
+    }
+
+    @PostMapping(
+            value = "/id/{id}/foto",
+            consumes = "multipart/form-data"
+    )
+    public ResponseEntity<String> subirFotoPerfil(
+            @PathVariable Integer id,
+            @RequestParam("foto") MultipartFile foto
+    ) {
+        System.out.println("--> RECIBIENDO PETICIÓN DE SUBIDA PARA USUARIO ID: " + id);
+
+        try {
+            if (foto.isEmpty()) {
+                System.out.println("Error: Archivo vacío");
+                return ResponseEntity.badRequest().body("Archivo vacío");
+            }
+
+            Usuario usuario = usuarioService.getById(id);
+            if (usuario == null) {
+                System.out.println("Error: Usuario no encontrado en BD");
+                return ResponseEntity.notFound().build();
+            }
+
+            String contentType = foto.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                System.out.println("Error: No es imagen, es " + contentType);
+                return ResponseEntity.badRequest().body("Archivo no es una imagen");
+            }
+
+            String projectDir = System.getProperty("user.dir");
+            String uploadDir = projectDir + File.separator + "uploads" + File.separator + "usuarios" + File.separator;
+
+            System.out.println("Intentando guardar en: " + uploadDir);
+
+            File directory = new File(uploadDir);
+            if (!directory.exists()) {
+                boolean creados = directory.mkdirs();
+                System.out.println("¿Directorios creados?: " + creados);
+            }
+
+            String extension = "jpg";
+            if (contentType != null) {
+                if (contentType.contains("png")) {
+                    extension = "png";
+                } else if (contentType.contains("jpeg") || contentType.contains("jpg")) {
+                    extension = "jpg";
+                }
+            }
+
+            String nombreArchivo = "usuario_" + id + "." + extension;
+            Path rutaArchivo = Paths.get(uploadDir + nombreArchivo);
+
+            try (InputStream inputStream = foto.getInputStream()) {
+                Files.copy(inputStream, rutaArchivo, StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("¡ARCHIVO GUARDADO EXITOSAMENTE!");
+            }
+
+            String urlFoto = "/uploads/usuarios/" + nombreArchivo;
+            usuario.setFotoUrl(urlFoto);
+            usuarioService.save(usuario);
+
+            return ResponseEntity.ok(urlFoto);
+
+        } catch (Exception e) {
+            System.err.println("ERROR CRÍTICO AL SUBIR:");
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Error al subir imagen: " + e.getMessage());
+        }
     }
 }

@@ -14,4 +14,6 @@ public class UsuarioDto {
     private String password;
     private Integer edadHijo;
     private Instant fechaRegistro;
+    private String fotoUrl;
+
 }
