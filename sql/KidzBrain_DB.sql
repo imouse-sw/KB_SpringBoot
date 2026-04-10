@@ -57,7 +57,6 @@ CREATE TABLE IF NOT EXISTS TBL_Lecciones (
   FOREIGN KEY (id_grado) REFERENCES TBL_Grados (id_grado)
 );
 
-
 /* Tabla `TBL_Juegos` */
 CREATE TABLE IF NOT EXISTS TBL_Juegos (
   id_juego INT NOT NULL AUTO_INCREMENT,
@@ -69,20 +68,15 @@ CREATE TABLE IF NOT EXISTS TBL_Juegos (
   FOREIGN KEY (id_leccion) REFERENCES TBL_Lecciones (id_leccion)
 );
 
-
-/* Tabla `TBL_Progreso`*/
-
-CREATE TABLE IF NOT EXISTS TBL_Progreso (
-  id_progreso INT NOT NULL AUTO_INCREMENT,
-  id_usuario INT NOT NULL,
-  id_juego INT NOT NULL,
-  completado BOOLEAN NOT NULL,
-  puntuacion_obtenida INT NULL,
-  intentos_realizados INT NOT NULL DEFAULT 1,
-  fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id_progreso),
-  FOREIGN KEY (id_usuario) REFERENCES TBL_Usuarios (id_usuario),
-  FOREIGN KEY (id_juego) REFERENCES TBL_Juegos (id_juego)
+CREATE TABLE IF NOT EXISTS tbl_progreso (
+    id_progreso INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    id_leccion INT NOT NULL,  -- CAMBIO: Referencia directa a la Lección
+    completado TINYINT(1) DEFAULT 0, -- 1 = Completada
+    puntuacion_obtenida INT DEFAULT 0, -- Opcional: si la lección tiene un quiz final
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES tbl_usuarios(id_usuario),
+    FOREIGN KEY (id_leccion) REFERENCES tbl_lecciones(id_leccion)
 );
 
 ALTER TABLE TBL_Usuarios
