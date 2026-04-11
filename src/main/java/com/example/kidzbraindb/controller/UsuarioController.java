@@ -1,5 +1,6 @@
 package com.example.kidzbraindb.controller;
 
+import com.example.kidzbraindb.dto.LoginDto;
 import com.example.kidzbraindb.dto.UsuarioDto;
 import com.example.kidzbraindb.model.Usuario;
 import com.example.kidzbraindb.service.UsuarioService;
@@ -7,6 +8,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.File;
 import java.io.InputStream;
@@ -14,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UsuarioController {
     private final UsuarioService usuarioService;
+    private final PasswordEncoder passwordEncoder;
     private List<UsuarioDto> usuarioDtos;
 
     // Puedes borrar este método loadList() si ya no usas la lista en memoria
@@ -71,6 +74,34 @@ public class UsuarioController {
         );
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<UsuarioDto> login(@RequestBody LoginDto loginDto) {
+        // busca al usuario por el correo que manda android
+        Usuario u = usuarioService.getByCorreo(loginDto.getCorreo());
+
+        if (u == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // chingalo
+        }
+
+        // si el usuario existe, compara la contraseña enviada con el del logindto
+        if (passwordEncoder.matches(loginDto.getPassword(), u.getPassword())) {
+            // devolvemos los datos para que android arme su SharedPreferences
+            return ResponseEntity.ok(
+                    UsuarioDto.builder()
+                            .usuarioId(u.getId())
+                            .nombre(u.getNombre())
+                            .correo(u.getCorreo())
+                            .edadHijo(u.getEdad())
+                            //no se envia la contraseña por seguridad
+                            .fechaRegistro(u.getFecha_registro())
+                            .fotoUrl(u.getFotoUrl())
+                            .build()
+            );
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Código 401
+        }
+    }
+
     @GetMapping("/id/{id}")
     public ResponseEntity<UsuarioDto> getById(@PathVariable Integer id) {
         Usuario u = usuarioService.getById( id );
@@ -115,12 +146,14 @@ public class UsuarioController {
 
     @PostMapping
     public ResponseEntity<UsuarioDto> save(@RequestBody UsuarioDto usuarioDto) {
+        String passwordHasheada = passwordEncoder.encode(usuarioDto.getPassword());
+
         Usuario u = Usuario
                 .builder()
                 .id(usuarioDto.getUsuarioId())
                 .nombre(usuarioDto.getNombre())
                 .correo(usuarioDto.getCorreo())
-                .password(usuarioDto.getPassword())
+                .password(passwordHasheada)
                 .edad(usuarioDto.getEdadHijo())
                 .fecha_registro(usuarioDto.getFechaRegistro())
                 .build();
