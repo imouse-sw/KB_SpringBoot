@@ -2,7 +2,9 @@ package com.example.kidzbraindb.controller;
 
 import com.example.kidzbraindb.dto.LoginDto;
 import com.example.kidzbraindb.dto.UsuarioDto;
+import com.example.kidzbraindb.model.Acceso;
 import com.example.kidzbraindb.model.Usuario;
+import com.example.kidzbraindb.service.AccesoService;
 import com.example.kidzbraindb.service.UsuarioService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UsuarioController {
     private final UsuarioService usuarioService;
+    private final AccesoService accesoService;
     private final PasswordEncoder passwordEncoder;
     private List<UsuarioDto> usuarioDtos;
 
@@ -86,6 +89,11 @@ public class UsuarioController {
         // si el usuario existe, compara la contraseña enviada con el del logindto
         if (passwordEncoder.matches(loginDto.getPassword(), u.getPassword())) {
             // devolvemos los datos para que android arme su SharedPreferences
+            accesoService.save(Acceso.builder()
+                    .usuario(u)
+                    .accionRealizada("LOGIN_EXITOSO")
+                    .build());
+
             return ResponseEntity.ok(
                     UsuarioDto.builder()
                             .usuarioId(u.getId())
@@ -97,7 +105,12 @@ public class UsuarioController {
                             .fotoUrl(u.getFotoUrl())
                             .build()
             );
-        } else {
+        }
+        else {
+            accesoService.save(Acceso.builder()
+                    .usuario(u)
+                    .accionRealizada("LOGIN_FALLIDO")
+                    .build());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Código 401
         }
     }

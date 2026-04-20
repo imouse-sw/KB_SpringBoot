@@ -5,14 +5,12 @@
    © iMouse S.A. de C.V.
 */
 
-
 /* Creación de la base de datos */
 CREATE DATABASE IF NOT EXISTS kidzbrain_db;
 USE kidzbrain_db;
 
 
 /* Tabla `TBL_Grados` */
-
 CREATE TABLE IF NOT EXISTS TBL_Grados (
   id_grado INT NOT NULL AUTO_INCREMENT,
   nombre VARCHAR(45) NOT NULL,
@@ -22,7 +20,6 @@ CREATE TABLE IF NOT EXISTS TBL_Grados (
 
 
 /* Tabla `TBL_Usuarios` */
-
 CREATE TABLE IF NOT EXISTS TBL_Usuarios (
   id_usuario INT NOT NULL AUTO_INCREMENT,
   nombre VARCHAR(100) NOT NULL,
@@ -30,12 +27,12 @@ CREATE TABLE IF NOT EXISTS TBL_Usuarios (
   contraseña VARCHAR(255) NOT NULL,
   edad_hijo INT NOT NULL,
   fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  foto_url VARCHAR(255) NULL,
   PRIMARY KEY (id_usuario)
 );
 
 
 /* Tabla `TBL_Materias` */
-
 CREATE TABLE IF NOT EXISTS TBL_Materias (
   id_materia INT NOT NULL AUTO_INCREMENT,
   nombre VARCHAR(100) NOT NULL,
@@ -44,7 +41,6 @@ CREATE TABLE IF NOT EXISTS TBL_Materias (
 
 
 /* Tabla `TBL_Lecciones` */
-
 CREATE TABLE IF NOT EXISTS TBL_Lecciones (
   id_leccion INT NOT NULL AUTO_INCREMENT,
   id_materia INT NOT NULL,
@@ -68,6 +64,7 @@ CREATE TABLE IF NOT EXISTS TBL_Juegos (
   FOREIGN KEY (id_leccion) REFERENCES TBL_Lecciones (id_leccion)
 );
 
+/* Tabla `TBL_Progreso` */
 CREATE TABLE IF NOT EXISTS tbl_progreso (
     id_progreso INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
@@ -79,5 +76,11 @@ CREATE TABLE IF NOT EXISTS tbl_progreso (
     FOREIGN KEY (id_leccion) REFERENCES tbl_lecciones(id_leccion)
 );
 
-ALTER TABLE TBL_Usuarios
-ADD foto_url VARCHAR(255) NULL;
+/* Tabla `TBL_Accesos` */
+CREATE TABLE IF NOT EXISTS TBL_Accesos (
+	id_acceso INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    accion_realizada VARCHAR(15),
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES tbl_usuarios(id_usuario)
+);
