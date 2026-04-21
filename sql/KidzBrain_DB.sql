@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS TBL_Usuarios (
   contraseña VARCHAR(255) NOT NULL,
   edad_hijo INT NOT NULL,
   fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expiracion_codigo DATETIME NULL,
+  codigo_recuperacion VARCHAR(6) NULL,
   foto_url VARCHAR(255) NULL,
   PRIMARY KEY (id_usuario)
 );

@@ -1,10 +1,13 @@
 package com.example.kidzbraindb.controller;
 
 import com.example.kidzbraindb.dto.LoginDto;
+import com.example.kidzbraindb.dto.RestablecerPasswordDto;
+import com.example.kidzbraindb.dto.SolicitudRecuperacionDto;
 import com.example.kidzbraindb.dto.UsuarioDto;
 import com.example.kidzbraindb.model.Acceso;
 import com.example.kidzbraindb.model.Usuario;
 import com.example.kidzbraindb.service.AccesoService;
+import com.example.kidzbraindb.service.EmailService;
 import com.example.kidzbraindb.service.UsuarioService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,13 +33,8 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
     private final AccesoService accesoService;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
     private List<UsuarioDto> usuarioDtos;
-
-    // Puedes borrar este método loadList() si ya no usas la lista en memoria
-    public void loadList() {
-        usuarioDtos = new ArrayList<>();
-        // ...
-    }
 
     @GetMapping
     public ResponseEntity<List<UsuarioDto>> list(@RequestParam (name = "nombre", defaultValue = "", required = false) String user) {
@@ -131,9 +129,73 @@ public class UsuarioController {
                         .password(u.getPassword())
                         .edadHijo(u.getEdad())
                         .fechaRegistro(u.getFecha_registro())
-                        .fotoUrl(u.getFotoUrl()) // <--- ¡ESTO FALTABA!
+                        .fotoUrl(u.getFotoUrl())
                         .build()
         );
+    }
+
+    @PostMapping("/reset-request")
+    public ResponseEntity<?> solicitarRecuperacion(@RequestBody SolicitudRecuperacionDto dto) {
+        Usuario usuario = usuarioService.getByCorreo(dto.getCorreo());
+
+        if (usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // genera un código aleatorio de 6 dígitos
+        int numeroAleatorio = (int) (Math.random() * 900000) + 100000;
+        String codigo = String.valueOf(numeroAleatorio);
+
+        // le da una vigencia de 15 minutos
+        Instant expiracion = Instant.now().plus(15, java.time.temporal.ChronoUnit.MINUTES);
+
+        // guarda el código y la fecha
+        usuario.setCodigoRecuperacion(codigo);
+        usuario.setExpiracionCodigo(expiracion);
+        usuarioService.save(usuario); // actualiza en bd
+
+        String asunto = "KidzBrain - Código de recuperación de contraseña";
+        String mensaje = "Hola, " + usuario.getNombre() + ".\n\n"
+                + "Recibimos una solicitud para restablecer tu contraseña en KidzBrain.\n"
+                + "Tu código de seguridad de 6 dígitos es: " + codigo + "\n\n"
+                + "Este código expirará en 15 minutos.\n"
+                + "Si no solicitaste este cambio, puedes ignorar este correo.\n\n"
+                + "Atentamente,\nEl equipo de iMouse.";
+
+        emailService.enviarEmail(usuario.getCorreo(), asunto, mensaje);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> restablecerPassword(@RequestBody RestablecerPasswordDto dto) {
+        Usuario usuario = usuarioService.getByCorreo(dto.getCorreo());
+
+        if (usuario == null) {
+            return ResponseEntity.status(404).body("Usuario no encontrado.");
+        }
+
+        // el código no coincide
+        if (usuario.getCodigoRecuperacion() == null || !usuario.getCodigoRecuperacion().equals(dto.getCodigo())) {
+            return ResponseEntity.status(400).body("El código de seguridad es incorrecto.");
+        }
+
+        // el código ya expiró conchesumare :(
+        if (usuario.getExpiracionCodigo().isBefore(java.time.Instant.now())) {
+            return ResponseEntity.status(400).body("El código ha expirado, solicita uno nuevo.");
+        }
+
+        // encripta la nueva contraseña
+        String passwordEncriptada = passwordEncoder.encode(dto.getNuevaPassword());
+        usuario.setPassword(passwordEncriptada);
+
+        // quitamos los campos de recuperación
+        usuario.setCodigoRecuperacion(null);
+        usuario.setExpiracionCodigo(null);
+
+        usuarioService.save(usuario);
+
+        return ResponseEntity.ok("¡Contraseña actualizada con éxito!");
     }
 
     @GetMapping("/mail/{correo}")
