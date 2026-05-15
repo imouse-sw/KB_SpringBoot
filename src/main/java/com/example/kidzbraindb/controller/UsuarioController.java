@@ -1,15 +1,14 @@
 package com.example.kidzbraindb.controller;
 
-import com.example.kidzbraindb.dto.LoginDto;
-import com.example.kidzbraindb.dto.RestablecerPasswordDto;
-import com.example.kidzbraindb.dto.SolicitudRecuperacionDto;
-import com.example.kidzbraindb.dto.UsuarioDto;
+import com.example.kidzbraindb.dto.*;
 import com.example.kidzbraindb.model.Acceso;
 import com.example.kidzbraindb.model.Usuario;
+import com.example.kidzbraindb.security.JwtUtil;
 import com.example.kidzbraindb.service.AccesoService;
 import com.example.kidzbraindb.service.EmailService;
 import com.example.kidzbraindb.service.UsuarioService;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +34,9 @@ public class UsuarioController {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private List<UsuarioDto> usuarioDtos;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @GetMapping
     public ResponseEntity<List<UsuarioDto>> list(@RequestParam (name = "nombre", defaultValue = "", required = false) String user) {
@@ -86,6 +88,9 @@ public class UsuarioController {
 
         // si el usuario existe, compara la contraseña enviada con el del logindto
         if (passwordEncoder.matches(loginDto.getPassword(), u.getPassword())) {
+            // generamos el token
+            String tokenGenerado = jwtUtil.generateToken(u.getCorreo());
+
             // devolvemos los datos para que android arme su SharedPreferences
             accesoService.save(Acceso.builder()
                     .usuario(u)
@@ -101,6 +106,7 @@ public class UsuarioController {
                             //no se envia la contraseña por seguridad
                             .fechaRegistro(u.getFecha_registro())
                             .fotoUrl(u.getFotoUrl())
+                            .token(tokenGenerado) // pasamos el JWT
                             .build()
             );
         }
@@ -219,7 +225,7 @@ public class UsuarioController {
         );
     }
 
-    @PostMapping
+    @PostMapping("/registro")
     public ResponseEntity<UsuarioDto> save(@RequestBody UsuarioDto usuarioDto) {
         String passwordHasheada = passwordEncoder.encode(usuarioDto.getPassword());
 
@@ -252,6 +258,21 @@ public class UsuarioController {
     {
         usuarioService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/borrar-cuenta")
+    public ResponseEntity<?> borrarCuenta(@RequestBody BorrarCuentaDto dto) {
+        Usuario usuario = usuarioService.getByCorreo(dto.getCorreo());
+
+        if(usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if(!passwordEncoder.matches(dto.getPassword(), usuario.getPassword())) {
+            return ResponseEntity.status(401).body("Contraseña incorrecta. No se puede borrar la cuenta.");
+        }
+        usuarioService.delete(usuario.getId());
+
+        return ResponseEntity.ok("Cuenta eliminada definitivamente, mi amor.");
     }
 
     @PutMapping("/id/{id}")

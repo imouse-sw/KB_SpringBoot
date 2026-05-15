@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-
+import java.util.List;
 import java.time.Instant;
 
 @Data
@@ -45,4 +45,10 @@ public class Usuario {
 
     @Column(name = "foto_url")
     private String fotoUrl;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Acceso> accesos;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Progreso> progresos;
 }
