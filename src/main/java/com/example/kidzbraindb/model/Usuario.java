@@ -1,6 +1,8 @@
 package com.example.kidzbraindb.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,11 +24,15 @@ public class Usuario {
     private Integer id;
 
     @Column(name = "nombre", nullable = false)
+    @NotBlank(message = "El nombre de usuario es obligatorio.")
     private String nombre;
 
+    @NotBlank(message = "El correo no puede estar vacío.")
+    @Email(message = "Debe tener un formato de correo válido.")
     @Column(name = "correo", nullable = false)
     private String correo;
 
+    @NotBlank(message = "La contraseña es obligatoria.")
     @Column(name = "contraseña", nullable = false)
     private String password;
 

@@ -7,6 +7,7 @@ import com.example.kidzbraindb.security.JwtUtil;
 import com.example.kidzbraindb.service.AccesoService;
 import com.example.kidzbraindb.service.EmailService;
 import com.example.kidzbraindb.service.UsuarioService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -78,7 +79,7 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UsuarioDto> login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<UsuarioDto> login(@Valid @RequestBody LoginDto loginDto) {
         // busca al usuario por el correo que manda android
         Usuario u = usuarioService.getByCorreo(loginDto.getCorreo());
 
@@ -226,7 +227,12 @@ public class UsuarioController {
     }
 
     @PostMapping("/registro")
-    public ResponseEntity<UsuarioDto> save(@RequestBody UsuarioDto usuarioDto) {
+    public ResponseEntity<?> save(@Valid @RequestBody UsuarioDto usuarioDto) {
+        Usuario usuarioExistente = usuarioService.getByCorreo(usuarioDto.getCorreo());
+        if (usuarioExistente != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("El correo ya está registrado.");
+        }
+
         String passwordHasheada = passwordEncoder.encode(usuarioDto.getPassword());
 
         Usuario u = Usuario
