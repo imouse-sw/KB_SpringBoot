@@ -104,7 +104,7 @@ public class UsuarioController {
                             .nombre(u.getNombre())
                             .correo(u.getCorreo())
                             .edadHijo(u.getEdad())
-                            //no se envia la contraseña por seguridad
+                            // no se envía la contraseña por seguridad
                             .fechaRegistro(u.getFecha_registro())
                             .fotoUrl(u.getFotoUrl())
                             .token(tokenGenerado) // pasamos el JWT
@@ -278,7 +278,7 @@ public class UsuarioController {
         }
         usuarioService.delete(usuario.getId());
 
-        return ResponseEntity.ok("Cuenta eliminada definitivamente, mi amor.");
+        return ResponseEntity.ok("Cuenta eliminada definitivamente.");
     }
 
     @PutMapping("/id/{id}")
