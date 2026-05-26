@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                     // rutas públicas que no requieren token
                         .requestMatchers(
-				"/KidzBrain/api/test"
+				"/KidzBrain/api/test",
                                 "/KidzBrain/api/usuarios/login",
                                 "/KidzBrain/api/usuarios/registro",
                                 "/KidzBrain/api/usuarios/reset-request",
